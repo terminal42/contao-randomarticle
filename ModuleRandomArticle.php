@@ -35,11 +35,16 @@ class ModuleRandomArticle extends Module
 
 
 	public function generate()
-	{
+	{		
 		if (TL_MODE == 'BE')
 		{
 			$objTemplate = new BackendTemplate('be_wildcard');
+
 			$objTemplate->wildcard = '### RANDOM ARTICLE ###';
+			$objTemplate->title = $this->headline;
+			$objTemplate->id = $this->id;
+			$objTemplate->link = $this->name;
+			$objTemplate->href = $this->Environment->script.'?do=themes&amp;table=tl_module&amp;act=edit&amp;id=' . $this->id;
 
 			return $objTemplate->parse();
 		}
@@ -83,7 +88,7 @@ class ModuleRandomArticle extends Module
 			case '1':
 				if ($_SESSION['MOD_RANDOMARTICLE'][$this->id]['article'] > 0 && $this->keepArticle > 0 && $this->keepArticle > $_SESSION['MOD_RANDOMARTICLE'][$this->id]['count'])
 				{
-					$objArticle = $this->Database->prepare("SELECT tl_article.*, tl_page.id AS page_id, tl_page.alias AS page_alias LEFT OUTER JOIN tl_page ON tl_article.pid=tl_page.id FROM tl_article WHERE tl_article.id=?")
+					$objArticle = $this->Database->prepare("SELECT tl_article.*, tl_page.id AS page_id, tl_page.alias AS page_alias FROM tl_article LEFT OUTER JOIN tl_page ON tl_article.pid=tl_page.id WHERE tl_article.id=?")
 												 ->limit(1)
 												 ->execute($_SESSION['MOD_RANDOMARTICLE'][$this->id]['article']);
 					break;
