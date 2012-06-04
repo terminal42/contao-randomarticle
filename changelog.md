@@ -1,6 +1,12 @@
 randomarticle
 ==============
 
+Version 1.3.2 stable (2012-??-??) 
+----------------------------------
+
+Added changelog and readme files, fixed ticket #169.
+
+
 Version 1.3.1 stable (2009-05-19) 
 ----------------------------------
 
