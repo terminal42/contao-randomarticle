@@ -5,7 +5,8 @@ randomarticle
 Version 1.3.2 stable (2012-06-13)
 ---------------------------------
 - Added changelog and readme files
-- Fixed ticket #169.
+- Added templates for Contao 2.10/2.11
+- Fixed ticket #169
 
 
 Version 1.3.1 stable (2009-05-19)
