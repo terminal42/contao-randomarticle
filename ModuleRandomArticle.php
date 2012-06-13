@@ -35,7 +35,7 @@ class ModuleRandomArticle extends Module
 
 
 	public function generate()
-	{		
+	{
 		if (TL_MODE == 'BE')
 		{
 			$objTemplate = new BackendTemplate('be_wildcard');
