@@ -16,3 +16,4 @@ CREATE TABLE `tl_module` (
   `randomArticle` char(1) NOT NULL default '',
   `keepArticle` varchar(3) NOT NULL default '',
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
