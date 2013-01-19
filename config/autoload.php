@@ -26,20 +26,20 @@
  * @license    http://opensource.org/licenses/lgpl-3.0.html
  */
 
+ 
+/**
+ * Register the classes
+ */
+ClassLoader::addClasses(array
+(
+	'ModuleRandomArticle' => 'system/modules/randomarticle/ModuleRandomArticle.php'
+));
+
 
 /**
- * Fields
+ * Register the templates
  */
-$GLOBALS['TL_LANG']['tl_module']['randomArticle']			= array('Random mode', 'This setting is per module for each visitor.');
-$GLOBALS['TL_LANG']['tl_module']['keepArticle']				= array('Keep article', 'Enter how many page views the same article should be shown.');
-$GLOBALS['TL_LANG']['tl_module']['showTeaser']				= array('Show teaser', 'Show the teaser text instead of the article followed by a "Read more..." link.');
-$GLOBALS['TL_LANG']['tl_module']['numberOfArticles']		= array('Number of articles', 'Here you can enter a number of articles to be displayed. Set 0 to display all articles.');
-
-
-/**
- * Reference
- */
-$GLOBALS['TL_LANG']['tl_module']['randomArticle_ref']['']	= 'Fetch new random article on each page load';
-$GLOBALS['TL_LANG']['tl_module']['randomArticle_ref']['1']	= 'Keep random article for a number of page loads';
-$GLOBALS['TL_LANG']['tl_module']['randomArticle_ref']['2']	= 'Keep one article for the whole session';
-
+TemplateLoader::addFiles(array
+(
+	'mod_randomarticle' => 'system/modules/randomarticle/templates'
+));

@@ -33,6 +33,7 @@
 $GLOBALS['TL_LANG']['tl_module']['randomArticle']			= array('Zufallsmodus', 'Diese Einstellung gilt pro Modul und pro Besucher.');
 $GLOBALS['TL_LANG']['tl_module']['keepArticle']				= array('Artikel beibehalten', 'Geben Sie an wie viele Seitenaufrufe derselbe Artikel gezeigt werden soll.');
 $GLOBALS['TL_LANG']['tl_module']['showTeaser']				= array('Teasertext anzeigen', 'Den Teasertext anstatt des Artikels gefolgt von einem "Weiterlesen..." Link anzeigen.');
+$GLOBALS['TL_LANG']['tl_module']['numberOfArticles']		= array('Anzahl Artikel', 'Hier können Sie eine Zahl für die Anzahl Artikel eingeben, die Sie angezeigt haben möchten. Benutzen Sie 0, um alle Artikel anzuzeigen.');
 
 
 /**

@@ -50,8 +50,16 @@ class ModuleRandomArticle extends Module
 
 			return $objTemplate->parse();
 		}
-		
-		if (!file_exists(TL_ROOT . '/system/modules/frontend/ModuleArticle.php'))
+
+		$strFile = 'system/modules/frontend/ModuleArticle.php';
+
+		// Check the file in Contao 3
+		if (version_compare(VERSION, '3.0', '>='))
+		{
+			$strFile = 'system/modules/core/modules/ModuleArticle.php';
+		}
+
+		if (!file_exists(TL_ROOT . '/' . $strFile))
 		{
 			$this->log('Class ModuleArticle does not exist', 'ModuleRandomArticle compile()', TL_ERROR);
 			return '';
@@ -73,72 +81,102 @@ class ModuleRandomArticle extends Module
 			$this->inColumn = 'main';
 		}
 		
-		switch( $this->randomArticle )
+		switch ($this->randomArticle)
 		{
 			// Keep the whole session
 			case '2':
-				if ($_SESSION['MOD_RANDOMARTICLE'][$this->id]['article'] > 0)
+				if (is_array($_SESSION['MOD_RANDOMARTICLE'][$this->id]['articles']) && !empty($_SESSION['MOD_RANDOMARTICLE'][$this->id]['articles']))
 				{
-					$objArticle = $this->Database->prepare("SELECT tl_article.*, tl_page.id AS page_id, tl_page.alias AS page_alias FROM tl_article LEFT OUTER JOIN tl_page ON tl_article.pid=tl_page.id WHERE tl_article.id=?")
-												 ->limit(1)
-												 ->execute($_SESSION['MOD_RANDOMARTICLE'][$this->id]['article']);
-												 
+					$objArticlesStmt = $this->Database->prepare("SELECT tl_article.*, tl_page.id AS page_id, tl_page.alias AS page_alias FROM tl_article LEFT OUTER JOIN tl_page ON tl_article.pid=tl_page.id WHERE tl_article.id IN (" . implode(',', array_map('intval', $_SESSION['MOD_RANDOMARTICLE'][$this->id]['articles'])) . ")");
+
+					// Limit items
+					if ($this->numberOfArticles > 0)
+					{
+						$objArticlesStmt->limit($this->numberOfArticles);
+					}
+
+					$objArticles = $objArticlesStmt->execute();
 					break;
 				}
 				
 			// Keep a number of times
 			case '1':
-				if ($_SESSION['MOD_RANDOMARTICLE'][$this->id]['article'] > 0 && $this->keepArticle > 0 && $this->keepArticle > $_SESSION['MOD_RANDOMARTICLE'][$this->id]['count'])
+				if (is_array($_SESSION['MOD_RANDOMARTICLE'][$this->id]['articles']) && !empty($_SESSION['MOD_RANDOMARTICLE'][$this->id]['articles']) && $this->keepArticle > 0 && $this->keepArticle > $_SESSION['MOD_RANDOMARTICLE'][$this->id]['count'])
 				{
-					$objArticle = $this->Database->prepare("SELECT tl_article.*, tl_page.id AS page_id, tl_page.alias AS page_alias FROM tl_article LEFT OUTER JOIN tl_page ON tl_article.pid=tl_page.id WHERE tl_article.id=?")
-												 ->limit(1)
-												 ->execute($_SESSION['MOD_RANDOMARTICLE'][$this->id]['article']);
+					$objArticlesStmt = $this->Database->prepare("SELECT tl_article.*, tl_page.id AS page_id, tl_page.alias AS page_alias FROM tl_article LEFT OUTER JOIN tl_page ON tl_article.pid=tl_page.id WHERE tl_article.id IN (" . implode(',', array_map('intval', $_SESSION['MOD_RANDOMARTICLE'][$this->id]['articles'])) . ")");
+
+					// Limit items
+					if ($this->numberOfArticles > 0)
+					{
+						$objArticlesStmt->limit($this->numberOfArticles);
+					}
+
+					$objArticles = $objArticlesStmt->execute();
 					break;
 				}
 			
 			default:
+				$_SESSION['MOD_RANDOMARTICLE'][$this->id]['articles'] = array();
 				$_SESSION['MOD_RANDOMARTICLE'][$this->id]['count'] = 0;
-				$objArticle = $this->Database->prepare("SELECT tl_article.*, tl_page.id AS page_id, tl_page.alias AS page_alias FROM tl_article LEFT OUTER JOIN tl_page ON tl_article.pid=tl_page.id WHERE tl_article.pid=? AND tl_article.inColumn=? " . ((is_array($GLOBALS['RANDOMARTICLES']) && count($GLOBALS['RANDOMARTICLES'])) ? ' AND tl_article.id NOT IN (' . implode(',', $GLOBALS['RANDOMARTICLES']) . ') ' : '') . "AND (tl_article.start=? OR tl_article.start<?) AND (tl_article.stop=? OR tl_article.stop>?)" . (!BE_USER_LOGGED_IN ? ' AND tl_article.published=?' : '') . " ORDER BY RAND()")
-											 ->limit(1)
-											 ->execute($this->rootPage, $this->inColumn, '', time(), '', time(), 1);
+				$objArticlesStmt = $this->Database->prepare("SELECT tl_article.*, tl_page.id AS page_id, tl_page.alias AS page_alias FROM tl_article LEFT OUTER JOIN tl_page ON tl_article.pid=tl_page.id WHERE tl_article.pid=? AND tl_article.inColumn=? " . ((is_array($GLOBALS['RANDOMARTICLES']) && count($GLOBALS['RANDOMARTICLES'])) ? ' AND tl_article.id NOT IN (' . implode(',', $GLOBALS['RANDOMARTICLES']) . ') ' : '') . "AND (tl_article.start=? OR tl_article.start<?) AND (tl_article.stop=? OR tl_article.stop>?)" . (!BE_USER_LOGGED_IN ? ' AND tl_article.published=1' : '') . " ORDER BY RAND()");
+
+				// Limit items
+				if ($this->numberOfArticles > 0)
+				{
+					$objArticlesStmt->limit($this->numberOfArticles);
+				}
+
+				$objArticles = $objArticlesStmt->execute($this->rootPage, $this->inColumn, '', time(), '', time());
 		}
 
-
-		if ($objArticle->numRows < 1)
+		if ($objArticles->numRows < 1)
 		{
 			return;
 		}
 		
-		$_SESSION['MOD_RANDOMARTICLE'][$this->id]['article'] = $objArticle->id;
 		$_SESSION['MOD_RANDOMARTICLE'][$this->id]['count'] = strlen($_SESSION['MOD_RANDOMARTICLE'][$this->id]['count']) ? ($_SESSION['MOD_RANDOMARTICLE'][$this->id]['count']+1) : 1;
-		$GLOBALS['RANDOMARTICLES'][] = $objArticle->id;
+		$arrArticles = array();
 
-		// Print article as PDF
-		if ($this->Input->get('pdf') == $objArticle->id)
+		// Generate articles
+		while ($objArticles->next())
 		{
-			$this->printArticleAsPdf($objArticle);
+			$_SESSION['MOD_RANDOMARTICLE'][$this->id]['articles'][] = $objArticles->id;
+			$GLOBALS['RANDOMARTICLES'][] = $objArticles->id;
+
+			// Print article as PDF
+			if ($this->Input->get('pdf') == $objArticles->id)
+			{
+				$this->printArticleAsPdf($objArticles);
+			}
+
+			$objArticles->headline = $objArticles->title;
+			$objArticles->showTeaser = $this->showTeaser;
+			$objArticles->multiMode = $this->showTeaser ? true : false;
+	
+			$objArticle = new ModuleArticle($objArticles, $this->inColumn);
+			$objArticle->cssID = $this->cssID;
+			$objArticle->space = $this->space;
+			
+			// Overwrite article url
+			if ($objArticles->numRows == 1)
+			{
+				$pageAlias = $objPage->alias;
+				$pageId = $objPage->id;
+				$objPage->alias = $objArticle->page_alias;
+				$objPage->id = $objArticle->page_id;
+			}
+
+			$arrArticles[] = $objArticle->generate();
 		}
 
-		$objArticle->headline = $objArticle->title;
-		$objArticle->showTeaser = $this->showTeaser;
-		$objArticle->multiMode = $this->showTeaser ? true : false;
-
-		$objArticle = new ModuleArticle($objArticle, $this->inColumn);
-		$objArticle->cssID = $this->cssID;
-		$objArticle->space = $this->space;
-		
-		// Overwrite article url
-		$pageAlias = $objPage->alias;
-		$pageId = $objPage->id;
-		$objPage->alias = $objArticle->page_alias;
-		$objPage->id = $objArticle->page_id;
-		
-		// Parse article
-		$this->Template->article = $objArticle->generate();
+		$this->Template->article = implode($arrArticles, "\n");
 		
 		// Reset page options
-		$objPage->alias = $pageAlias;
-		$objPage->id = $pageId;
+		if ($objArticles->numRows == 1)
+		{
+			$objPage->alias = $pageAlias;
+			$objPage->id = $pageId;
+		}
 	}
 }
 

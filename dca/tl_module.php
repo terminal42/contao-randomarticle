@@ -31,9 +31,9 @@
  * Palettes
  */
 $GLOBALS['TL_DCA']['tl_module']['palettes']['__selector__'][]	= 'randomArticle';
-$GLOBALS['TL_DCA']['tl_module']['palettes']['randomarticle']	= '{title_legend},name,type;{reference_legend},rootPage,inColumn;{config_legend},randomArticle,showTeaser;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space';
-$GLOBALS['TL_DCA']['tl_module']['palettes']['randomarticle1']	= '{title_legend},name,type;{reference_legend},rootPage,inColumn;{config_legend},randomArticle,keepArticle,showTeaser;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space';
-$GLOBALS['TL_DCA']['tl_module']['palettes']['randomarticle2']	= '{title_legend},name,type;{reference_legend},rootPage,inColumn;{config_legend},randomArticle,showTeaser;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space';
+$GLOBALS['TL_DCA']['tl_module']['palettes']['randomarticle']	= '{title_legend},name,type;{reference_legend},rootPage,inColumn;{config_legend},randomArticle,showTeaser,numberOfArticles;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space';
+$GLOBALS['TL_DCA']['tl_module']['palettes']['randomarticle1']	= '{title_legend},name,type;{reference_legend},rootPage,inColumn;{config_legend},randomArticle,keepArticle,showTeaser,numberOfArticles;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space';
+$GLOBALS['TL_DCA']['tl_module']['palettes']['randomarticle2']	= '{title_legend},name,type;{reference_legend},rootPage,inColumn;{config_legend},randomArticle,showTeaser,numberOfArticles;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space';
  
 
 /**
@@ -44,6 +44,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['showTeaser'] = array
 	'label'			=> &$GLOBALS['TL_LANG']['tl_module']['showTeaser'],
 	'inputType'		=> 'checkbox',
 	'exclude'		=> true,
+	'sql'           => "char(1) NOT NULL default ''"
 );
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['randomArticle'] = array
@@ -54,6 +55,7 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['randomArticle'] = array
 	'options'		=> array('', '1', '2'),
 	'reference'		=> &$GLOBALS['TL_LANG']['tl_module']['randomArticle_ref'],
 	'eval'			=> array('submitOnChange'=>true),
+	'sql'           => "char(1) NOT NULL default ''"
 );
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['keepArticle'] = array
@@ -63,5 +65,15 @@ $GLOBALS['TL_DCA']['tl_module']['fields']['keepArticle'] = array
 	'exclude'		=> true,
 	'default'		=> 10,
 	'eval'			=> array('mandatory'=>true, 'rgxp'=>'digit', 'maxlength'=>3),
+	'sql'           => "varchar(3) NOT NULL default ''"
 );
 
+$GLOBALS['TL_DCA']['tl_module']['fields']['numberOfArticles'] = array
+(
+	'label'			=> &$GLOBALS['TL_LANG']['tl_module']['numberOfArticles'],
+	'inputType'		=> 'text',
+	'exclude'		=> true,
+	'default'		=> 1,
+	'eval'			=> array('mandatory'=>true, 'rgxp'=>'digit', 'maxlength'=>5),
+	'sql'           => "smallint(5) unsigned NOT NULL default '1'"
+);
